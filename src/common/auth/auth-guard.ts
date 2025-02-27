@@ -8,7 +8,6 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
     const ctx = GqlExecutionContext.create(context);
     const req = ctx.getContext().req;
 
-    console.log('🔍 Authorization Header:', req.headers.authorization); // Debug
     return req;
   }
 }

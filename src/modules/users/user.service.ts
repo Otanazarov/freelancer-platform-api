@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -10,12 +10,16 @@ import { LoginUserDto } from './dto/register-user.dto';
 import { sign } from 'jsonwebtoken';
 import { env } from 'src/common/config/config';
 import { Roles } from 'src/common/consts/roles';
+import { Client } from './entities/client.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    @InjectRepository(Client)
+    private readonly clientRepository: Repository<Client>,
   ) {}
 
   async register(dto: CreateUserDto): Promise<User> {
@@ -24,16 +28,28 @@ export class UserService {
     });
 
     if (userExists) {
-      HttpError('user with email already exists');
+      throw new HttpError('User with this email already exists');
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    const user = await this.userRepository.create({
-      ...dto,
-      password: hashedPassword,
-    });
 
-    return this.userRepository.save(user);
+    if (dto.role.toUpperCase() === Roles.CLIENT) {
+      const client = this.clientRepository.create({
+        ...dto,
+        password: hashedPassword,
+      });
+      return this.clientRepository.save(client);
+    }
+
+    if (dto.role.toUpperCase() === Roles.FREELANCER) {
+      const user = this.userRepository.create({
+        ...dto,
+        password: hashedPassword,
+      });
+      return this.userRepository.save(user);
+    }
+
+    throw new HttpError('Role is not valid');
   }
 
   async login(dto: LoginUserDto) {
