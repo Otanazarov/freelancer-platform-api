@@ -15,9 +15,6 @@ export class GqlRolesGuard implements CanActivate {
     const ctx = GqlExecutionContext.create(context);
     const user = ctx.getContext().req.user;
 
-    console.log('✅ User:', user);
-    console.log('✅ Required Roles:', requiredRoles);
-
     if (!user || !requiredRoles.includes(user.role)) {
       throw new ForbiddenException('You do not have permission to access this resource');
     }
