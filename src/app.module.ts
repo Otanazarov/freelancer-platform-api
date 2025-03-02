@@ -22,6 +22,8 @@ import { Client } from './modules/users/entities/client.entity';
       autoSchemaFile: 'schema.gql',
     }),
     UserModule,
+
+    
   ],
   controllers: [AppController],
   providers: [AppService],
